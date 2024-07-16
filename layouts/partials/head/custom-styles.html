@@ -1,21 +1,29 @@
- {{ range .Site.Params.customCSS }}
-  {{ if hugo.IsServer }}
-    {{ $styles := resources.Get . }}
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+{{ range .Site.Params.customCSS }}
+  {{ $styles := resources.Get . }}
+  {{ if $styles }}
+    {{ if hugo.IsServer }}
+      <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+    {{ else }}
+      {{ $styles := $styles | minify | fingerprint }}
+      <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+    {{ end }}
   {{ else }}
-    {{ $styles := resources.Get . | minify | fingerprint }}
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+    <link rel="stylesheet" href="{{ . }}" media="screen">
   {{ end }}
 {{ end }}
 
 {{ range .Site.Params.customSCSS }}
-  {{/* We don't change the targetPath to because it's transparent to users */}}
-  {{ if hugo.IsServer }}
-    {{ $cssOpts := (dict "enableSourceMap" true ) }}
-    {{ $styles := resources.Get . | toCSS $cssOpts }}
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+  {{ $styles := resources.Get . }}
+  {{ if $styles }}
+    {{ if hugo.IsServer }}
+      {{ $cssOpts := (dict "enableSourceMap" true ) }}
+      {{ $styles := $styles | toCSS $cssOpts }}
+      <link rel="stylesheet" href="{{ $styles.RelPermalink }}" media="screen">
+    {{ else }}
+      {{ $styles := $styles | toCSS | minify | fingerprint }}
+      <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+    {{ end }}
   {{ else }}
-    {{ $styles := resources.Get . | toCSS | minify | fingerprint }}
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}" crossorigin="anonymous" media="screen" />
+    <link rel="stylesheet" href="{{ . }}" media="screen">
   {{ end }}
 {{ end }}
